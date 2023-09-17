@@ -148,11 +148,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4105362945620786471, guid: ebea5f8b8163f9a4ab9d9a1b45444e28, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -3.737
+      value: -3.806
       objectReference: {fileID: 0}
     - target: {fileID: 4105362945620786471, guid: ebea5f8b8163f9a4ab9d9a1b45444e28, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.079
+      value: 2.353
       objectReference: {fileID: 0}
     - target: {fileID: 4105362945620786471, guid: ebea5f8b8163f9a4ab9d9a1b45444e28, type: 3}
       propertyPath: m_LocalPosition.z
@@ -466,7 +466,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 88
+  m_Constraints: 112
   m_CollisionDetection: 1
 --- !u!136 &898923337
 CapsuleCollider:
@@ -482,7 +482,7 @@ CapsuleCollider:
   m_Height: 4
   m_Direction: 1
   m_Center: {x: 0, y: 2, z: 0}
---- !u!114 &898923338
+--- !u!114 &898923342
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -491,11 +491,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 898923329}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d1be1dbe967b555488d0494102a033ee, type: 3}
+  m_Script: {fileID: 11500000, guid: e8f0c45d1c90d9f478c0ef49b84d8fd1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 2
-  jumpSpeed: 0
+  jumpPower: 200
 --- !u!1 &1230353971
 GameObject:
   m_ObjectHideFlags: 0
@@ -819,7 +819,7 @@ GameObject:
   - component: {fileID: 2077447041}
   - component: {fileID: 2077447040}
   - component: {fileID: 2077447043}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}

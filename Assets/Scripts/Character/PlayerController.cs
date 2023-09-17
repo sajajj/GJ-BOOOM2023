@@ -2,17 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CharacterController : MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
     public float moveSpeed;
-    public float jumpSpeed;
+    public float jumpPower;     //因为这种方式是施加力的方式，所以要抵消重力，需要数值大一些
     private Rigidbody _rigidbody;
+    private CharacterController _characterController;
     private Animator _animator;
 
     // Start is called before the first frame update
     void Start()
     {
         _rigidbody = GetComponent<Rigidbody>(); 
+        _characterController = GetComponent<CharacterController>(); 
         _animator = GetComponent<Animator>(); 
     }
 
@@ -21,8 +23,10 @@ public class CharacterController : MonoBehaviour
     {
         Flip();
         Move();
-        
+        Jump();
+        SwitchAnimation();
     }
+
 
     void Flip()
     {
@@ -48,6 +52,37 @@ public class CharacterController : MonoBehaviour
 
         bool  playerHasXAxisSpeed = Mathf.Abs( playerVel.x ) > Mathf.Epsilon; // Epsilon为大于0的无限小的数
         _animator.SetBool("isRun", playerHasXAxisSpeed);
+    }
+
+    void Jump()
+    {
+        if ( Input.GetButtonDown("Jump") )
+        {
+            if ( IsOnGround())
+            { 
+                _rigidbody.AddForce(Vector3.up * jumpPower); 
+                _animator.SetBool("isJump", true);
+            }
+                
+            // _animator.SetBool("isJump", true);
+        }
+
+    }
+
+    bool IsOnGround()
+    {
+        return Physics.Raycast( transform.position, -Vector3.up, 0.1f);
+    }
+
+    void SwitchAnimation()
+    {
+        if(_animator.GetBool("isJump"))
+        {
+            if( _rigidbody.velocity.y < 0.0f && IsOnGround() )
+            {
+                _animator.SetBool("isJump", false);
+            }
+        }
     }
 
 }
