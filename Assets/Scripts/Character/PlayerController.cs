@@ -9,6 +9,9 @@ public class PlayerController : MonoBehaviour
     private Rigidbody _rigidbody;
     private CharacterController _characterController;
     private Animator _animator;
+    private bool canDoubleJump = false;
+    private int maxJumpCount = 1;
+    private int jumpCount;
 
     // Start is called before the first frame update
     void Start()
@@ -16,6 +19,7 @@ public class PlayerController : MonoBehaviour
         _rigidbody = GetComponent<Rigidbody>(); 
         _characterController = GetComponent<CharacterController>(); 
         _animator = GetComponent<Animator>(); 
+        jumpCount = maxJumpCount;
     }
 
     // Update is called once per frame
@@ -23,6 +27,7 @@ public class PlayerController : MonoBehaviour
     {
         Flip();
         Move();
+        CheckDoubleJump();
         Jump();
         SwitchAnimation();
     }
@@ -58,15 +63,40 @@ public class PlayerController : MonoBehaviour
     {
         if ( Input.GetButtonDown("Jump") )
         {
-            if ( IsOnGround())
-            { 
-                _rigidbody.AddForce(Vector3.up * jumpPower); 
-                _animator.SetBool("isJump", true);
+            if ( !canDoubleJump )
+            {
+                if ( IsOnGround() )
+                {
+                    _rigidbody.AddForce(Vector3.up * jumpPower); 
+                    _animator.SetBool("isJump", true);
+                }
             }
-                
-            // _animator.SetBool("isJump", true);
+            else
+            {
+                if ( jumpCount > 0 )
+                {
+                    _rigidbody.AddForce(Vector3.up * jumpPower); 
+                    _animator.SetBool("isJump", true);
+
+                    jumpCount--;
+                }
+            }
+            
         }
 
+    }
+
+    void CheckDoubleJump()
+    {
+        if ( canDoubleJump )
+        {
+            maxJumpCount = 1;   //多一次跳跃
+        }
+        
+        if ( IsOnGround() )
+        {
+            jumpCount = maxJumpCount;
+        }
     }
 
     bool IsOnGround()
