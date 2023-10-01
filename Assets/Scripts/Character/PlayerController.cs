@@ -4,10 +4,17 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    [Tooltip("移动速度")]
     public float moveSpeed;
+    [Tooltip("短闪距离")]
+    public float teleportPower;
+    public bool lockMovement;
+    public LayerMask dashLayerMask;
     private Rigidbody _rigidbody;
     private Animator _animator;
-    public bool lockMovement;
+    private Vector3 moveDir;
+    private bool isDashButtonDown;
+    RaycastHit raycastHit;
 
     // Start is called before the first frame update
     void Start()
@@ -19,10 +26,9 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        KeyController();
         Flip();
-        Move();
     }
-
 
     void Flip()
     {
@@ -40,15 +46,45 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void KeyController()
+    {
+        float horizontal = Input.GetAxis("Horizontal");
+        float vertical = Input.GetAxis("Vertical");
+        moveDir = new Vector3(horizontal, 0, vertical);
+
+        if( Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift) )
+        {
+            isDashButtonDown = true;
+        }
+    }
+
+    void FixedUpdate()
+    {
+        Move();
+        Teleport();
+    }
+
+    void Teleport()
+    {
+        if( isDashButtonDown )
+        {
+            Vector3 dashPosition = transform.position + moveDir * teleportPower;
+            
+            if (Physics.Raycast(transform.position, moveDir, out raycastHit, teleportPower, dashLayerMask))
+            {
+                dashPosition = raycastHit.point;
+            }
+
+            _rigidbody.MovePosition(dashPosition);
+            isDashButtonDown= false;
+        }
+    }
+
     void Move()
     {
         if (lockMovement)
             return;
 
-        //float moveDir = Input.GetAxis("Horizontal");
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-        Vector3 moveDir = new Vector3(horizontal, 0, vertical);
         if (moveDir == Vector3.zero)
         {
             _animator.SetBool("isRun", false);
