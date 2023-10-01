@@ -4,19 +4,34 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    private enum State
+    {
+        Normal,
+        Rolling,
+    }
+
     [Tooltip("移动速度")]
     public float moveSpeed;
+    [Tooltip("翻滚速度,即会一瞬间冲出的初始速度")]
+    public float initRollSpeed;
+    [Tooltip("翻滚速度会按照一定倍数随时间衰减，直至正常速度")]
+    public float rollSpeedDropMultiplier;
     [Tooltip("短闪距离")]
     public float teleportPower;
     [Tooltip("传入短闪特效的Prefab")]
     public GameObject teleportEffect;
     public bool lockMovement;
     public LayerMask dashLayerMask;
+
     private Rigidbody _rigidbody;
     private Animator _animator;
+    private Vector3 faceDir;
     private Vector3 moveDir;
+    private Vector3 rollDir;
+    private float rollSpeed;
     private bool isDashButtonDown;
     private RaycastHit raycastHit;
+    private State state;
     
 
     // Start is called before the first frame update
@@ -24,6 +39,7 @@ public class PlayerController : MonoBehaviour
     {
         _rigidbody = GetComponent<Rigidbody>(); 
         _animator = GetComponentInChildren<Animator>();
+        state = State.Normal;
     }
 
     // Update is called once per frame
@@ -51,20 +67,64 @@ public class PlayerController : MonoBehaviour
 
     void KeyController()
     {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-        moveDir = new Vector3(horizontal, 0, vertical);
-
-        if( Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift) )
+        switch( state )
         {
-            isDashButtonDown = true;
+            case State.Normal:
+                float horizontal = Input.GetAxis("Horizontal");
+                float vertical = Input.GetAxis("Vertical");
+                moveDir = new Vector3(horizontal, 0, vertical);
+
+                if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
+                {
+                    isDashButtonDown = true;
+                }
+
+                if (Input.GetKeyDown(KeyCode.Space))
+                {
+                    if ( moveDir != Vector3.zero )
+                    {
+                        rollDir = moveDir;
+                    }
+                    else
+                    {
+                        rollDir = faceDir;
+                    }
+                    
+                    rollSpeed = initRollSpeed;
+                    state = State.Rolling;
+                    //等翻滚动画做好了，在这里播放翻滚动画
+                }
+                break;
+            case State.Rolling:
+                rollSpeed -= rollSpeed * rollSpeedDropMultiplier * Time.deltaTime;
+
+                float rollSpeedMinimum = 2f;
+                if ( rollSpeed < rollSpeedMinimum )
+                {
+                    state = State.Normal;
+                }
+                break;
         }
     }
 
     void FixedUpdate()
     {
-        Move();
-        Teleport();
+        switch( state)
+        {
+            case State.Normal:
+                Move();
+                Teleport();
+                break;
+            case State.Rolling:
+                Roll();
+                break;
+        }
+    }
+
+    void Roll()
+    {
+        //_rigidbody.velocity = new Vector3(moveDir.x * moveSpeed, _rigidbody.velocity.y, moveDir.z * moveSpeed);
+        _rigidbody.velocity = rollDir * rollSpeed;
     }
 
     void Teleport()
@@ -72,6 +132,10 @@ public class PlayerController : MonoBehaviour
         if( isDashButtonDown )
         {
             Vector3 dashPosition = transform.position + moveDir * teleportPower;
+            if ( moveDir != Vector3.zero )
+            {
+                faceDir = moveDir;
+            }
             
             if (Physics.Raycast(transform.position, moveDir, out raycastHit, teleportPower, dashLayerMask))
             {
@@ -97,8 +161,11 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        Vector3 playerVel = new Vector3(moveDir.x * moveSpeed, _rigidbody.velocity.y, moveDir.z * moveSpeed);
-        _rigidbody.velocity = playerVel;
+        _rigidbody.velocity = new Vector3(moveDir.x * moveSpeed, _rigidbody.velocity.y, moveDir.z * moveSpeed);
+        if (moveDir != Vector3.zero)
+        {
+            faceDir = moveDir;
+        }
 
         _animator.SetBool("isRun", true);
     }
