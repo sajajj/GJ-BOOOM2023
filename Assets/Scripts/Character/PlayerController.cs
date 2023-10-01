@@ -8,13 +8,16 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed;
     [Tooltip("短闪距离")]
     public float teleportPower;
+    [Tooltip("传入短闪特效的Prefab")]
+    public GameObject teleportEffect;
     public bool lockMovement;
     public LayerMask dashLayerMask;
     private Rigidbody _rigidbody;
     private Animator _animator;
     private Vector3 moveDir;
     private bool isDashButtonDown;
-    RaycastHit raycastHit;
+    private RaycastHit raycastHit;
+    
 
     // Start is called before the first frame update
     void Start()
@@ -74,6 +77,9 @@ public class PlayerController : MonoBehaviour
             {
                 dashPosition = raycastHit.point;
             }
+
+            // Spawn visual effect
+            DashEffect.CreateDashEffect(transform.position, moveDir, Vector3.Distance(transform.position, dashPosition), teleportEffect);
 
             _rigidbody.MovePosition(dashPosition);
             isDashButtonDown= false;
